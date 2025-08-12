@@ -1,0 +1,153 @@
+---
+title: "Teste_Analytics_LarissaMathias"
+author: "Larissa Mathias"
+date: "2025-08-12"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Instalando os pacotes necessários
+
+```{r}
+install.packages("dplyr")
+install.packages("readr")
+
+library(dplyr)
+library(readr)
+```
+
+Definindo categoria, produtos e número de linhas
+
+```{r}
+
+categorias <- list(
+  "Eletronicos" = c("Fone de Ouvido", "Mouse", "Teclado", "Monitor", "Carregador"),
+  "Alimentos" = c("Arroz", "Feijao", "Macarrao", "Azeite", "Cafe"),
+  "Vestuário" = c("Camiseta", "Calça Jeans", "Tenis", "Jaqueta", "Meias"))
+data_aleatoria <- function(inicio, fim) {
+  as.Date(runif(1, min = as.numeric(inicio), max = as.numeric(fim)))}
+
+n <- 100
+```
+
+Gerando os dados
+
+```{r}
+set.seed(123)
+dados <- data.frame(
+  ID = 1:n,
+  Data = replicate(n, data_aleatoria(as.Date("2023-01-01"), as.Date("2023-12-31"))),
+  Categoria = character(n),
+  Produto = character(n),
+  Quantidade = sample(1:10, n, replace = TRUE),
+  Preço = round(runif(n, 10, 500), 2))
+```
+
+Atribuindo categoria e produto. Reordenando colunas.
+
+```{r}
+for (i in 1:n) {
+  cat_nome <- sample(names(categorias), 1)
+  prod_nome <- sample(categorias[[cat_nome]], 1)
+  dados$Categoria[i] <- cat_nome
+  dados$Produto[i] <- prod_nome}
+
+dados <- dados %>% select(ID, Data, Produto, Categoria, Quantidade, Preço)
+```
+
+Simulando erros como duplicatas e nulos.
+
+```{r}
+num_duplicadas <- 5
+
+indices_duplicar <- sample(1:nrow(dados), num_duplicadas, replace = FALSE)
+
+linhas_duplicadas <- dados[indices_duplicar, ]
+dados <- bind_rows(dados, linhas_duplicadas)
+
+num_na_por_coluna <- 3
+
+na_produto <- sample(1:nrow(dados), num_na_por_coluna)
+dados$Produto[na_produto] <- NA
+
+na_quantidade <- sample(1:nrow(dados), num_na_por_coluna)
+dados$Quantidade[na_quantidade] <- NA
+
+```
+
+Limpando os dados e salvando o csv
+
+```{r}
+dados$Data<-as.Date(dados$Data)
+
+dados <- dados[!duplicated(dados), ]
+
+colSums(is.na(dados))
+
+dados <- na.omit(dados)
+
+summary(dados)
+
+if (!dir.exists("dados")) dir.create("dados")
+
+write_csv(dados, "dados/dados_clean.csv")
+
+#ver onde está salvo
+getwd()
+
+```
+
+Criando a coluna com o total de vendas, identificando o produto com mais vendas e salvando o csv
+
+```{r}
+dados$Total_Venda <- dados$Quantidade * dados$Preço
+
+produto_top <- dados %>%
+  group_by(Produto) %>%
+  summarise(Venda_Total = sum(Total_Venda, na.rm = TRUE)) %>%
+  arrange(desc(Venda_Total)) %>%
+  slice(1)
+
+print(produto_top)
+
+write.csv(dados, "dados/dados_clean.csv")
+```
+
+Instalando pacotes para visualização de dados
+
+```{r}
+install.packages("ggplot2")
+install.packages("lubridate")
+
+library(ggplot2)
+library(lubridate)
+```
+
+Gráfico: total de vendas por categoria
+
+```{r}
+ggplot(dados) + geom_col(aes(x=Categoria, y=Total_Venda))+
+labs(title = "Vendas R$ por categoria", x = "Categoria", y = "Total de Vendas")
+```
+
+Gráfico: total de vendas por mês
+
+```{r}
+ggplot(dados %>% group_by(mes = floor_date(Data, "month")) %>%
+summarise(Total_Venda = sum(Total_Venda))) +
+geom_line(aes(x = mes, y = Total_Venda)) +
+labs(title = "Evolução de vendas R$ por mês", x = "Mês", y = "Total de Vendas") +
+geom_point(aes(x = mes, y = Total_Venda)) +
+scale_x_date(date_breaks = "1 month",date_labels = "%b %Y")
+```
+
+Gráfico: top 10 produtos mais vendidos
+
+```{r}
+ggplot(dados %>% group_by(Produto) %>% summarise(Total = sum(Total_Venda)) %>%
+arrange(desc(Total)) %>% slice(1:10),
+aes(x = reorder(Produto, Total), y = Total)) +
+coord_flip() + geom_col()
+labs(title = "Top 10 produtos mais vendidos", x = "Produto", y = "Total de Vendas")
+```
