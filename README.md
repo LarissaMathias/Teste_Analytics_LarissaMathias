@@ -1,1 +1,4 @@
-# Teste_Analytics_LarissaMathias
+Softwares utilizados nesse projeto: R e SQLite
+
+Descrição dos arquivos: 
+
