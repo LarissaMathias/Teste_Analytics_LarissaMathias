@@ -1,2 +1,5 @@
-Conclusão: Apesar de tanto a categoria de alimentos quanto a de vestuário terem tido aproximadamente R$50.000 em vendas, podemos ver que o arroz (categoria alimentos) e o monitor (categoria eletronicos) foram os mais vendidos. Além disso, em outubro tivemos o maior lucro do ano.
-Ao realizar as consultas em sql, identificamos que o monitor foi o produto menos vendido no mês de junho.
+Conclusão: Apesar de tanto a categoria de alimentos quanto a de vestuário terem tido aproximadamente R$50.000 em vendas, 
+podemos ver que o arroz (categoria alimentos) e o monitor (categoria eletrônicos) foram os mais vendidos, ou seja, não tivemos produto de 
+vestuário entre os mais vendidos. Ao realizar as consultas em sql, identificamos que o monitor foi o produto menos vendido no mês de junho. 
+Além disso, em outubro tivemos o maior lucro do ano.
+Podemos invstigar mais a fundo, com outras áreas, para entender o porquê de outubro ter sido o melhor mês e replicar nos outros.
